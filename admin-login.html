@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 
@@ -183,8 +184,12 @@
 
     <script>
 
+        // ===============================
+        // Production Backend URL
+        // ===============================
+
         const API_URL =
-            "http://localhost:5000";
+            "https://sakthi-dental-clinic-backend.onrender.com";
 
 
         document
@@ -193,13 +198,16 @@
 
                 e.preventDefault();
 
-
                 const username =
-                    document.getElementById("username").value.trim();
+                    document
+                        .getElementById("username")
+                        .value
+                        .trim();
 
                 const password =
-                    document.getElementById("password").value;
-
+                    document
+                        .getElementById("password")
+                        .value;
 
                 const button =
                     document.getElementById("loginButton");
@@ -239,9 +247,11 @@
 
 
                     if (!response.ok) {
+
                         throw new Error(
                             data.message || "Login failed"
                         );
+
                     }
 
 
@@ -259,16 +269,25 @@
 
                 } catch (error) {
 
+                    console.error(
+                        "Login Error:",
+                        error
+                    );
+
                     errorBox.textContent =
-                        error.message;
+                        error.message ||
+                        "Unable to connect to server.";
 
                     errorBox.style.display =
                         "block";
 
+
                 } finally {
 
                     button.disabled = false;
-                    button.textContent = "Login";
+
+                    button.textContent =
+                        "Login";
 
                 }
 
@@ -279,3 +298,4 @@
 </body>
 
 </html>
+```
