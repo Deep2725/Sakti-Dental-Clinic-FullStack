@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Admin Login | Sakthi Dental Clinic</title>
+
+    <link rel="stylesheet" href="css/style.css">
+
+    <style>
+        .login-section {
+            min-height: 70vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-box {
+            width: 100%;
+            max-width: 420px;
+            padding: 35px;
+            background: #fff;
+            border-radius: 15px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+        }
+
+        .login-box h2 {
+            margin-bottom: 10px;
+        }
+
+        .login-box p {
+            margin-bottom: 25px;
+        }
+
+        .login-form label {
+            display: block;
+            margin-bottom: 18px;
+            font-weight: 600;
+        }
+
+        .login-form input {
+            width: 100%;
+            padding: 12px;
+            margin-top: 7px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 15px;
+            box-sizing: border-box;
+        }
+
+        .login-form button {
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .login-error {
+            display: none;
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            background: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header class="header">
+
+        <nav class="navbar container">
+
+            <a class="logo" href="index.html">
+                <span>🦷</span>
+                Sakthi Dental Clinic
+            </a>
+
+            <ul class="nav-links">
+                <li>
+                    <a href="index.html">Home</a>
+                </li>
+
+                <li>
+                    <a href="contact.html">Contact</a>
+                </li>
+            </ul>
+
+        </nav>
+
+    </header>
+
+
+    <main>
+
+        <section class="page-hero">
+
+            <div class="container">
+
+                <span class="eyebrow">
+                    Secure Access
+                </span>
+
+                <h1>
+                    Admin <span>Login</span>
+                </h1>
+
+                <p>
+                    Login to manage patient appointments.
+                </p>
+
+            </div>
+
+        </section>
+
+
+        <section class="section login-section">
+
+            <div class="login-box">
+
+                <h2>
+                    Welcome <span>Admin</span>
+                </h2>
+
+                <p>
+                    Enter your admin credentials to continue.
+                </p>
+
+
+                <form class="login-form" id="loginForm">
+
+                    <label>
+                        Username
+
+                        <input
+                            type="text"
+                            id="username"
+                            name="username"
+                            placeholder="Enter username"
+                            required
+                        >
+
+                    </label>
+
+
+                    <label>
+                        Password
+
+                        <input
+                            type="password"
+                            id="password"
+                            name="password"
+                            placeholder="Enter password"
+                            required
+                        >
+
+                    </label>
+
+
+                    <button
+                        class="btn primary"
+                        type="submit"
+                        id="loginButton"
+                    >
+                        Login
+                    </button>
+
+
+                    <div
+                        class="login-error"
+                        id="loginError"
+                    ></div>
+
+                </form>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <script>
+
+        const API_URL =
+            "http://localhost:5000";
+
+
+        document
+            .getElementById("loginForm")
+            .addEventListener("submit", async function (e) {
+
+                e.preventDefault();
+
+
+                const username =
+                    document.getElementById("username").value.trim();
+
+                const password =
+                    document.getElementById("password").value;
+
+
+                const button =
+                    document.getElementById("loginButton");
+
+                const errorBox =
+                    document.getElementById("loginError");
+
+
+                button.disabled = true;
+                button.textContent = "Logging in...";
+
+                errorBox.style.display = "none";
+
+
+                try {
+
+                    const response =
+                        await fetch(
+                            `${API_URL}/api/admin/login`,
+                            {
+                                method: "POST",
+
+                                headers: {
+                                    "Content-Type": "application/json"
+                                },
+
+                                body: JSON.stringify({
+                                    username: username,
+                                    password: password
+                                })
+                            }
+                        );
+
+
+                    const data =
+                        await response.json();
+
+
+                    if (!response.ok) {
+                        throw new Error(
+                            data.message || "Login failed"
+                        );
+                    }
+
+
+                    // Save JWT token
+                    localStorage.setItem(
+                        "adminToken",
+                        data.token
+                    );
+
+
+                    // Open admin dashboard
+                    window.location.href =
+                        "admin.html";
+
+
+                } catch (error) {
+
+                    errorBox.textContent =
+                        error.message;
+
+                    errorBox.style.display =
+                        "block";
+
+                } finally {
+
+                    button.disabled = false;
+                    button.textContent = "Login";
+
+                }
+
+            });
+
+    </script>
+
+</body>
+
+</html>

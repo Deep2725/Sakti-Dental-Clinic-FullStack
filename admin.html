@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin | Sakthi Dental Clinic</title>
+    <link rel="stylesheet" href="css/style.css">
+
+    <style>
+        .admin-section {
+            padding: 60px 0;
+        }
+
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            gap: 20px;
+        }
+
+        .appointment-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .appointment-table th,
+        .appointment-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        .appointment-table th {
+            background: #f5f0fa;
+        }
+
+        .status {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .confirmed {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .cancelled {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .action-btn {
+            border: none;
+            padding: 7px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 2px;
+        }
+
+        .confirm-btn {
+            background: #28a745;
+            color: white;
+        }
+
+        .cancel-btn {
+            background: #dc3545;
+            color: white;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 30px;
+        }
+
+        @media (max-width: 900px) {
+            .appointment-table {
+                display: block;
+                overflow-x: auto;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header class="header">
+        <nav class="navbar container">
+            <a class="logo" href="index.html">
+                <span>🦷</span> Sakthi Dental Clinic
+            </a>
+
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="contact.html">Contact</a></li>
+                <li>
+                  <button
+                     class="btn primary"
+                     onclick="logout()">
+                     Logout
+                 </button>
+              </li>
+          </ul>
+        </nav>
+    </header>
+
+    <main>
+
+        <section class="page-hero">
+            <div class="container">
+                <span class="eyebrow">Admin Panel</span>
+                <h1>Appointment <span>Dashboard</span></h1>
+                <p>Manage all patient appointment requests.</p>
+            </div>
+        </section>
+
+        <section class="section admin-section">
+
+            <div class="container">
+
+                <div class="admin-header">
+                    <div>
+                        <h2>All <span>Appointments</span></h2>
+                        <p id="appointmentCount">Loading...</p>
+                    </div>
+
+                    <button class="btn primary" onclick="loadAppointments()">
+                        🔄 Refresh
+                    </button>
+                </div>
+
+                <div id="loading" class="loading">
+                    Loading appointments...
+                </div>
+
+                <div style="overflow-x:auto;">
+                    <table class="appointment-table" id="appointmentTable" style="display:none;">
+
+                        <thead>
+                            <tr>
+                                <th>Patient</th>
+                                <th>Phone</th>
+                                <th>Treatment</th>
+                                <th>Date</th>
+                                <th>Time</th>
+                                <th>Message</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="appointmentBody"></tbody>
+
+                    </table>
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+    <script>
+
+        const API_URL = "http://localhost:5000/api/appointments";
+        const token = localStorage.getItem("adminToken");
+
+        if (!token) {
+             window.location.href = "admin-login.html";
+        }
+
+        async function loadAppointments() {
+
+            const loading = document.getElementById("loading");
+            const table = document.getElementById("appointmentTable");
+            const body = document.getElementById("appointmentBody");
+            const count = document.getElementById("appointmentCount");
+
+            loading.style.display = "block";
+            table.style.display = "none";
+
+            try {
+
+                const response = await fetch(API_URL, {
+                    headers: {
+                        "Authorization": `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error("Failed to fetch appointments");
+                }
+
+                const appointments = await response.json();
+
+                body.innerHTML = "";
+
+                count.textContent =
+                    `${appointments.length} appointment(s) found`;
+
+                if (appointments.length === 0) {
+
+                    loading.textContent = "No appointments found.";
+                    return;
+
+                }
+
+                appointments.forEach(appointment => {
+
+                    const row = document.createElement("tr");
+
+                    row.innerHTML = `
+
+                        <td>
+                            <strong>${appointment.name}</strong><br>
+                            ${appointment.email || ""}
+                        </td>
+
+                        <td>${appointment.phone}</td>
+
+                        <td>${appointment.service}</td>
+
+                        <td>${appointment.date}</td>
+
+                        <td>${appointment.time}</td>
+
+                        <td>${appointment.message || "-"}</td>
+
+                        <td>
+                            <span class="status ${appointment.status.toLowerCase()}">
+                                ${appointment.status}
+                            </span>
+                        </td>
+
+                        <td>
+
+                            ${
+                                appointment.status !== "Confirmed"
+                                    ? `<button 
+                                        class="action-btn confirm-btn"
+                                        onclick="updateStatus('${appointment._id}', 'Confirmed')">
+                                        ✓ Confirm
+                                      </button>`
+                                    : ""
+                            }
+
+                            ${
+                                appointment.status !== "Cancelled"
+                                    ? `<button 
+                                        class="action-btn cancel-btn"
+                                        onclick="updateStatus('${appointment._id}', 'Cancelled')">
+                                        ✕ Cancel
+                                      </button>`
+                                    : ""
+                            }
+
+                        </td>
+                    `;
+
+                    body.appendChild(row);
+
+                });
+
+                loading.style.display = "none";
+                table.style.display = "table";
+
+            } catch (error) {
+
+                console.error(error);
+
+                loading.textContent =
+                    "Failed to load appointments. Make sure backend server is running.";
+
+            }
+        }
+
+
+        async function updateStatus(id, status) {
+
+            try {
+
+                const response = await fetch(`${API_URL}/${id}`, {
+
+                    method: "PUT",
+                    headers: {
+                       "Content-Type": "application/json",
+                       "Authorization": `Bearer ${token}`
+                    },
+
+            
+
+                    body: JSON.stringify({
+                        status: status
+                    })
+
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message);
+                }
+
+                alert(`Appointment ${status.toLowerCase()} successfully!`);
+
+                loadAppointments();
+
+            } catch (error) {
+
+                alert(error.message);
+
+            }
+
+        }
+
+
+        // Load appointments when page opens
+        loadAppointments();
+        function logout() {
+            localStorage.removeItem("adminToken");
+            window.location.href = "admin-login.html";
+        }
+
+    </script>
+
+</body>
+
+</html>
