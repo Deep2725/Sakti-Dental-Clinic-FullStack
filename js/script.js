@@ -211,7 +211,7 @@ document.getElementById("appointmentForm").onsubmit = async e => {
 
         // Send data to backend
         const r = await fetch(
-            "https://sakthi-dental-clinic-backend.onrender.com/api/appointments",
+            "https://sakti-dental-clinic-backend.onrender.com/api/appointments",
             {
                 method: "POST",
 
